@@ -1,0 +1,88 @@
+---
+alwaysApply: true
+---
+
+# Cursor 코드 컨벤션 가이드 
+
+## 📋 목차 
+- [프로젝트 구조](#프로젝트-구조) 
+- [디렉토리 및 파일 규칙](#디렉토리-및-파일-규칙) 
+- [명명 규칙](#명명-규칙) 
+- [코드 작성 규칙](#코드-작성-규칙) 
+- [공통 컴포넌트 사용 규칙](#공통-컴포넌트-사용-규칙) 
+- [Import 규칙](#import-규칙) 
+
+--- 
+
+## 프로젝트 구조 
+본 프로젝트는 **MSA(Micro Service Architecture)** 와 **FSD(Feature-Sliced Design)** 구조를 기반으로 합니다. 
+
+### 기본 디렉토리 구조 새로운 페이지를 생성할 때는 반드시 아래 구조를 따라 생성해야 합니다.
+```
+frontend/main/src/routes/ioms/portal/
+├── components/
+│   ├── modal/
+│   │   └── index.ts
+│   ├── table/
+│   │   └── index.ts
+│   └── index.ts
+├── interface/
+│   └── index.ts
+├── enum/
+│   └── index.ts
+├── utils/
+│   └── index.ts
+├── hooks/
+│   ├── api/
+│   │   └── index.ts
+│   └── service/
+│       └── index.ts
+```
+## 디렉토리 및 파일 규칙 
+### 1. components/ UI 컴포넌트를 저장하는 디렉토리입니다. 
+- **하위 디렉토리**: 컴포넌트 타입별로 분류 (modal, table 등) 
+- **파일명**: PascalCase 사용 (예: UserModal.tsx, DataTable.tsx) 
+- **index.ts**: 각 하위 디렉토리와 상위 디렉토리에 반드시 포함하여 export 관리
+
+### 2. interface/ TypeScript 인터페이스 및 타입 정의를 저장합니다. 
+- **파일명**: PascalCase 사용 (예: User.ts, ApiResponse.ts) 
+- **명명 규칙**: 인터페이스는 I 접두사 사용, 타입은 T 접두사 사용
+
+### 3. enum/ API 경로 및 상수값을 저장합니다. 
+- **파일명**: PascalCase 사용 (예: ApiPath.ts, UserStatus.ts) 
+- **용도**: 주로 hooks/api에서 사용할 API 경로를 정의
+
+### 4. utils/ 유틸리티 함수를 저장합니다. 
+- **파일명**: camelCase 사용 (예: formatDate.ts, validation.ts) 
+- **함수명**: camelCase 사용
+
+### 5. hooks/ 
+#### 5-1. hooks/api/ API 연동 함수를 저장합니다. 
+- **파일명**: camelCase 사용 (예: userApi.ts, productApi.ts) 
+- **함수 명명 규칙**: HTTP 메서드를 접두사로 사용 
+- get + 리소스명 (예: getUser, getDetailUser, getUserList) 
+- post + 리소스명 (예: postUser, postUserCreate) 
+- put + 리소스명 (예: putUser, putUserUpdate) 
+- delete + 리소스명 (예: deleteUser)
+
+#### 5-2. hooks/service/ 상태 관리 및 React Query 훅을 저장합니다. 
+- **Zustand 파일명**: use{Name}Store.ts (예: useUserStore.ts) 
+- **React Query 파일명**: use{Name}Query.ts (예: useUserQuery.ts)
+
+## 공통 컴포넌트 사용 규칙 프로젝트에서 사용하는 공통 컴포넌트는 반드시 아래 컴포넌트를 사용해야 합니다. 
+### 1. Modal 컴포넌트 
+- **사용 컴포넌트**: BasicModal 
+- **용도**: 모든 모달 UI는 BasicModal을 기반으로 구현
+
+
+## Import 규칙 
+### Import 순서 
+1. React 및 외부 라이브러리 
+2. 공통 컴포넌트 
+3. 내부 컴포넌트 
+4. 인터페이스/타입 
+5. 유틸리티 및 상수 
+6. 스타일
+
+## 마치며 
+이 컨벤션은 팀 전체의 코드 품질과 일관성을 유지하기 위한 가이드입니다. 새로운 기능을 추가하거나 코드를 작성할 때 반드시 이 문서를 참고하여 작업해주세요. **모든 팀원이 동일한 규칙을 따를 때, 유지보수가 쉽고 확장 가능한 코드베이스를 만들 수 있습니다.**
