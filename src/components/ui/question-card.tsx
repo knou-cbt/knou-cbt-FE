@@ -51,7 +51,7 @@ const answerChoiceVariants = cva(
       state: {
         default: "border-[#E5E7EB] hover:border-[#D1D5DC]",
         selected: "border-[#155DFC] bg-[#EFF6FF]",
-        correct: "border-[#059669] bg-[#ECFDF5]",
+        correct: "border-[#E5E7EB] bg-white",
         incorrect: "border-[#DC2626] bg-[#FEF2F2]",
         disabled: "border-[#E5E7EB] opacity-50 cursor-not-allowed",
       },
@@ -108,20 +108,23 @@ const AnswerChoice = React.forwardRef<HTMLDivElement, IAnswerChoiceProps>(
         tabIndex={state === "disabled" ? -1 : 0}
         {...props}
       >
-        {/* Radio Circle */}
-        <div className={cn(radioVariants({ state }))}>
-          {(state === "selected" ||
-            state === "correct" ||
-            state === "incorrect") && (
-            <div
-              className={cn("w-2.5 h-2.5 rounded-full", {
-                "bg-[#155DFC]": state === "selected",
-                "bg-[#059669]": state === "correct",
-                "bg-[#DC2626]": state === "incorrect",
-              })}
-            />
-          )}
-        </div>
+        {/* Correct Checkmark or Radio Circle */}
+        {state === "correct" ? (
+          <span className="w-[18px] h-6 font-normal text-base leading-6 text-[#00A63E]">
+            ✓
+          </span>
+        ) : (
+          <div className={cn(radioVariants({ state }))}>
+            {(state === "selected" || state === "incorrect") && (
+              <div
+                className={cn("w-2.5 h-2.5 rounded-full", {
+                  "bg-[#155DFC]": state === "selected",
+                  "bg-[#DC2626]": state === "incorrect",
+                })}
+              />
+            )}
+          </div>
+        )}
 
         {/* Answer Text */}
         <span className="flex-1 font-normal text-base leading-6 text-[#101828]">
@@ -184,10 +187,10 @@ const questionCardVariants = cva(
   {
     variants: {
       size: {
-        default: "w-[848px] p-8 pt-8 pb-0 gap-4",
-        sm: "w-full max-w-[600px] p-6 pt-6 pb-0 gap-3",
-        lg: "w-full max-w-[1024px] p-10 pt-10 pb-0 gap-5",
-        full: "w-full p-8 pt-8 pb-0 gap-4",
+        default: "w-[1066px] px-6 pt-8 pb-0 gap-6",
+        sm: "w-full max-w-[600px] px-4 pt-6 pb-0 gap-4",
+        lg: "w-full max-w-[1200px] px-8 pt-10 pb-0 gap-6",
+        full: "w-full px-6 pt-8 pb-0 gap-6",
       },
     },
     defaultVariants: {
