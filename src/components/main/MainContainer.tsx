@@ -1,22 +1,30 @@
 import { useMemo } from "react"
 import { Table, type ColumnDef } from "../ui"
+import { useNavigate } from "react-router-dom"
 
 interface ISubject {
+    id: string
     subjectName: string
 }
 
 const sampleData: ISubject[] = [
-    { subjectName: "컴퓨터구조" },
-    { subjectName: "운영체제" },
-    { subjectName: "데이터베이스" },
-    { subjectName: "네트워크" },
-    { subjectName: "알고리즘" },
-    { subjectName: "자료구조" },
-    { subjectName: "소프트웨어공학" },
-    { subjectName: "정보보안" },
+    { id: "1", subjectName: "컴퓨터구조" },
+    { id: "2", subjectName: "운영체제" },
+    { id: "3", subjectName: "데이터베이스" },
+    { id: "4", subjectName: "네트워크" },
+    { id: "5", subjectName: "알고리즘" },
+    { id: "6", subjectName: "자료구조" },
+    { id: "7", subjectName: "소프트웨어공학" },
+    { id: "8", subjectName: "정보보안" },
 ]
 
 export const MainContainer = () => {
+    const navigate = useNavigate();
+    
+    const handleClick = (subjectId: string) => {
+        navigate(`/exam/${subjectId}/year`);
+    }
+
     const columns = useMemo<ColumnDef<ISubject, unknown>[]>(
         () => [
             {
@@ -61,6 +69,7 @@ export const MainContainer = () => {
                         data={sampleData}
                         columns={columns}
                         enablePagination={false}
+                        onRowClick={(row) => handleClick(row.original.id)}
                     />
                 </div>
             </main>

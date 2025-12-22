@@ -51,7 +51,7 @@ const answerChoiceVariants = cva(
       state: {
         default: "border-[#E5E7EB] hover:border-[#D1D5DC]",
         selected: "border-[#155DFC] bg-[#EFF6FF]",
-        correct: "border-[#E5E7EB] bg-white",
+        correct: "border-[#059669] bg-[#ECFDF5]",
         incorrect: "border-[#DC2626] bg-[#FEF2F2]",
         disabled: "border-[#E5E7EB] opacity-50 cursor-not-allowed",
       },
@@ -110,9 +110,23 @@ const AnswerChoice = React.forwardRef<HTMLDivElement, IAnswerChoiceProps>(
       >
         {/* Correct Checkmark or Radio Circle */}
         {state === "correct" ? (
-          <span className="w-[18px] h-6 font-normal text-base leading-6 text-[#00A63E]">
-            ✓
-          </span>
+          <div className="flex items-center justify-center w-6 h-6 bg-[#059669] rounded-full">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 7L5.5 9.5L11 4"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
         ) : (
           <div className={cn(radioVariants({ state }))}>
             {(state === "selected" || state === "incorrect") && (
@@ -183,7 +197,7 @@ QuestionActionButton.displayName = "QuestionActionButton"
 // ============================================
 
 const questionCardVariants = cva(
-  "flex flex-col items-start bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)] rounded-[16px]",
+  "flex flex-col items-start bg-white rounded-[16px]",
   {
     variants: {
       size: {
