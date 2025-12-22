@@ -201,10 +201,10 @@ const questionCardVariants = cva(
   {
     variants: {
       size: {
-        default: "w-[1066px] px-6 pt-8 pb-0 gap-6",
-        sm: "w-full max-w-[600px] px-4 pt-6 pb-0 gap-4",
-        lg: "w-full max-w-[1200px] px-8 pt-10 pb-0 gap-6",
-        full: "w-full px-6 pt-8 pb-0 gap-6",
+        default: "w-[1066px] pt-8 pb-0 gap-6",
+        sm: "w-full max-w-[600px] pt-6 pb-0 gap-4",
+        lg: "w-full max-w-[1200px] pt-10 pb-0 gap-6",
+        full: "w-full pt-8 pb-0 gap-6",
       },
     },
     defaultVariants: {

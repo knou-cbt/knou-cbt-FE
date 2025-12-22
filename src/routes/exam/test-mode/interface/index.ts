@@ -1,23 +1,26 @@
 // 시험모드 관련 인터페이스 정의
 
 export interface IQuestion {
-    id: string
+    id: number
+    examId: number
     questionNumber: number
-    question: string
+    questionText: string
+    questionImageUrl?: string
+    correctAnswer: number // 정답 (1~)
+    explanation?: string // 해설
+    createdAt?: string
+    // UI용 답안 옵션 (API에서 별도 테이블로 관리 가능)
     answers: IAnswerOption[]
-    correctAnswer: string | number
-    commentary?: string
-    keywords?: string[]
 }
 
 export interface IAnswerOption {
-    value: string | number
+    value: number
     label: string
 }
 
 export interface IQuestionResult {
-    questionId: string
-    selectedAnswer: string | number | null
+    questionId: number
+    selectedAnswer: number | null
     isCorrect: boolean
 }
 

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 // ============================================
 
 const questionNumberVariants = cva(
-  "box-border flex flex-row justify-center items-center w-12 h-12 border-2 rounded-[10px] font-normal text-base leading-6 text-center transition-all duration-200 cursor-pointer",
+  "box-border flex flex-row justify-center items-center w-9 h-9 border-2 rounded-[8px] font-normal text-sm leading-5 text-center transition-all duration-200 cursor-pointer",
   {
     variants: {
       state: {
@@ -119,8 +119,8 @@ const LegendItem = React.forwardRef<HTMLDivElement, ILegendItemProps>(
       <div className={cn(legendIconVariants({ type }))}>
         {type === "answered" && (
           <svg
-            width="12"
-            height="12"
+            width="10"
+            height="10"
             viewBox="0 0 12 12"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -135,7 +135,7 @@ const LegendItem = React.forwardRef<HTMLDivElement, ILegendItemProps>(
           </svg>
         )}
       </div>
-      <span className="font-normal text-sm leading-5 text-[#4A5565]">
+      <span className="font-normal text-xs leading-5 text-[#4A5565]">
         {label}
       </span>
     </div>
@@ -148,14 +148,14 @@ LegendItem.displayName = "LegendItem"
 // ============================================
 
 const questionNavigatorVariants = cva(
-  "flex flex-col items-start bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)] rounded-[16px]",
+  "flex flex-col items-start bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)] rounded-[12px]",
   {
     variants: {
       size: {
-        default: "w-[1104px] p-6 pt-6 pb-0 gap-4",
-        sm: "w-full max-w-[600px] p-4 pt-4 pb-0 gap-3",
-        lg: "w-full max-w-[1200px] p-8 pt-8 pb-0 gap-5",
-        full: "w-full p-6 pt-6 pb-0 gap-4",
+        default: "w-[1104px] p-4 pt-4 pb-0 gap-3",
+        sm: "w-full max-w-[600px] p-3 pt-3 pb-0 gap-2",
+        lg: "w-full max-w-[1200px] p-6 pt-6 pb-0 gap-4",
+        full: "w-full p-4 pt-4 pb-0 gap-3",
       },
     },
     defaultVariants: {
@@ -197,7 +197,7 @@ const QuestionNavigator = React.forwardRef<
     {
       className,
       size,
-      title = "문제 번호",
+      title,
       totalQuestions = 40,
       currentQuestion = 1,
       questionStates = {},
@@ -233,14 +233,14 @@ const QuestionNavigator = React.forwardRef<
       >
         {/* Title */}
         {title && (
-          <h3 className="font-normal text-base leading-6 text-[#101828] w-full">
+          <h3 className="font-medium text-sm leading-5 text-[#101828] w-full">
             {title}
           </h3>
         )}
 
         {/* Question Numbers Grid */}
         <div className="w-full overflow-x-auto">
-          <div className="flex flex-row flex-wrap items-start gap-2">
+          <div className="flex flex-row flex-wrap items-start gap-1.5">
             {questions.map((num) => {
               const state = getQuestionState(num)
               return (
@@ -258,7 +258,7 @@ const QuestionNavigator = React.forwardRef<
 
         {/* Legend */}
         {showLegend && (
-          <div className="flex flex-row items-start gap-6 w-full pt-4 border-t border-[#E5E7EB]">
+          <div className="flex flex-row items-start gap-4 w-full py-2 border-t border-[#E5E7EB]">
             <LegendItem type="current" label={legendLabels.current || "현재 문제"} />
             <LegendItem type="answered" label={legendLabels.answered || "푼 문제"} />
             <LegendItem type="skipped" label={legendLabels.skipped || "건너뛴 문제"} />
