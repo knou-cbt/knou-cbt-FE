@@ -1,23 +1,34 @@
-import { Outlet, useLocation } from "react-router-dom"
+import { Outlet, useLocation } from "react-router-dom";
 
-import { Header, Footer } from "@/components"
-import { ExamProvider } from "@/contexts"
+import { Header, Footer } from "@/components";
+import { ExamProvider, useExamContext } from "@/contexts";
 
-function App() {
-  const location = useLocation()
+function AppContent() {
+  const location = useLocation();
+  const { isSubmitted } = useExamContext();
 
-  // 시험모드 경로 체크
-  const isExamMode = location.pathname.includes("/test-mode")
+  // 시험모드 경로 체크 (제출 후에는 exam 모드 해제)
+  const isExamMode =
+    location.pathname.includes("/test-mode") && !isSubmitted;
 
   return (
-    <ExamProvider>
-      <div className="min-h-screen bg-white flex flex-col">
-        <Header variant={isExamMode ? "exam" : "default"} />
-        <Outlet />
-        <Footer />
-      </div>
-    </ExamProvider>
-  )
+    <div className="min-h-screen bg-white flex flex-col">
+      <Header
+        key={isExamMode ? "exam" : "default"}
+        variant={isExamMode ? "exam" : "default"}
+      />
+      <Outlet />
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+function App() {
+  return (
+    <ExamProvider>
+      <AppContent />
+    </ExamProvider>
+  );
+}
+
+export default App;

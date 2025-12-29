@@ -1,8 +1,8 @@
-import { createBrowserRouter } from "react-router-dom"
+import { createBrowserRouter } from "react-router-dom";
 
-import App from "@/App"
-import { MainContainer } from "@/components"
-import { ExamYearPage, MemorizeModePage, TestModePage } from "@/routes"
+import App from "@/App";
+import { MainContainer } from "@/components";
+import { ExamYearPage, MemorizeModePage, TestModePage } from "@/routes";
 
 export const router = createBrowserRouter([
   {
@@ -27,5 +27,4 @@ export const router = createBrowserRouter([
       },
     ],
   },
-])
-
+]);

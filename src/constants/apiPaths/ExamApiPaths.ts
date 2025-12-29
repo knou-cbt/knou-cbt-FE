@@ -3,8 +3,10 @@
  * API 엔드포인트를 중앙에서 관리합니다.
  */
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || "";
+
 // 과목 API
-const SUBJECTS_BASE = "/api/subjects";
+const SUBJECTS_BASE = `${SERVER_URL}/api/subjects`;
 
 export const SubjectApiPaths = {
   // 과목 목록 조회 (검색 + 페이지네이션)
@@ -21,7 +23,7 @@ export const SubjectApiPaths = {
 } as const;
 
 // 시험지/문제 API
-const EXAMS_BASE = "/api/exams";
+const EXAMS_BASE = `${SERVER_URL}/api/exams`;
 
 export const ExamApiPaths = {
   // 시험 문제 조회 (암기모드/시험모드)
