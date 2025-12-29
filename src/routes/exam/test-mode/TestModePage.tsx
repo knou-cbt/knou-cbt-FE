@@ -1,183 +1,428 @@
-import { useState, useCallback, useEffect } from "react"
-import { useParams } from "react-router-dom"
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { CheckCircle, XCircle, Clock, BookOpen, Calendar } from "lucide-react";
 
 import {
-    QuestionCard,
-    QuestionNavigator,
-    type TQuestionState,
-} from "@/components/ui"
-import { useExamContext } from "@/contexts"
+  QuestionCard,
+  QuestionNavigator,
+  ExamNavButtons,
+  type TQuestionState,
+  Button,
+} from "@/components/ui";
+import { useExamContext } from "@/contexts";
 
-import type { IQuestion } from "./interface"
-
-// 과목 ID → 과목명 매핑 (추후 API 연동 시 제거)
-const subjectNameMap: Record<string, string> = {
-    "1": "컴퓨터구조",
-    "2": "운영체제",
-    "3": "데이터베이스",
-    "4": "네트워크",
-    "5": "알고리즘",
-    "6": "자료구조",
-    "7": "소프트웨어공학",
-    "8": "정보보안",
-}
-
-// 샘플 데이터 (추후 API 연동 시 제거)
-const sampleQuestions: IQuestion[] = [
-    {
-        id: 1,
-        examId: 1,
-        questionNumber: 1,
-        questionText: "다음 중 한국의 수도는 어디인가?",
-        correctAnswer: 2,
-        explanation: "대한민국의 수도는 서울특별시입니다. 서울은 1394년 조선 건국 이후부터 현재까지 한국의 수도 역할을 하고 있습니다.",
-        answers: [
-            { value: 1, label: "부산" },
-            { value: 2, label: "서울" },
-            { value: 3, label: "인천" },
-            { value: 4, label: "대전" },
-        ],
-    },
-    {
-        id: 2,
-        examId: 1,
-        questionNumber: 2,
-        questionText: "다음 중 운영체제가 아닌 것은?",
-        correctAnswer: 3,
-        explanation: "Python은 프로그래밍 언어입니다. 운영체제(OS)는 컴퓨터 하드웨어와 소프트웨어를 관리하는 시스템 소프트웨어로, Windows, Linux, macOS가 대표적입니다.",
-        answers: [
-            { value: 1, label: "Windows" },
-            { value: 2, label: "Linux" },
-            { value: 3, label: "Python" },
-            { value: 4, label: "macOS" },
-        ],
-    },
-    {
-        id: 3,
-        examId: 1,
-        questionNumber: 3,
-        questionText: "CPU의 구성요소가 아닌 것은?",
-        correctAnswer: 4,
-        explanation: "CPU는 ALU(산술논리장치), 제어장치, 레지스터로 구성됩니다. 하드디스크는 보조기억장치로 CPU의 구성요소가 아닙니다.",
-        answers: [
-            { value: 1, label: "ALU" },
-            { value: 2, label: "제어장치" },
-            { value: 3, label: "레지스터" },
-            { value: 4, label: "하드디스크" },
-        ],
-    },
-]
+import { useExamQuestionsQuery, useExamSubmitMutation } from "./hooks/service";
+import type { IQuestionResult } from "./interface";
 
 export const TestModePage = () => {
-    const { subjectId, year } = useParams<{ subjectId: string; year: string }>()
-    const { setOnExamEnd } = useExamContext()
+  const { year: examId } = useParams<{
+    subjectId: string;
+    year: string;
+  }>();
+  const navigate = useNavigate();
+  const {
+    setOnExamEnd,
+    setUnansweredCount,
+    setTotalQuestions,
+    setIsSubmitted: setContextIsSubmitted,
+  } = useExamContext();
 
-    const [currentIndex, setCurrentIndex] = useState(0)
-    const [answers, setAnswers] = useState<Record<number, string | number | null>>({})
-    const [isSubmitted, setIsSubmitted] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [answers, setAnswers] = useState<
+    Record<number, string | number | null>
+  >({});
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [results, setResults] = useState<IQuestionResult[]>([]);
 
-    // 시험 종료 핸들러 등록
-    useEffect(() => {
-        const handleExamEnd = () => {
-            // 시험 종료 시 제출 처리
-            setIsSubmitted(true)
-            console.log("시험이 종료되었습니다. 답안:", answers)
+  // 시험 시작 시간 추적
+  const [startTime] = useState<number>(() => Date.now());
+
+  // API 호출
+  const { data, isLoading, isError } = useExamQuestionsQuery(examId ?? "");
+  const submitMutation = useExamSubmitMutation(examId ?? "");
+
+  const exam = data?.exam;
+  const questions = useMemo(() => data?.questions ?? [], [data?.questions]);
+
+  // 풀지 않은 문제 개수 계산 및 Context 업데이트
+  const unansweredCount = useMemo(() => {
+    const answeredCount = Object.keys(answers).filter(
+      (key) =>
+        answers[Number(key)] !== null && answers[Number(key)] !== undefined
+    ).length;
+    return questions.length - answeredCount;
+  }, [questions.length, answers]);
+
+  // Context에 상태 동기화
+  useEffect(() => {
+    setTotalQuestions(questions.length);
+  }, [questions.length, setTotalQuestions]);
+
+  useEffect(() => {
+    setUnansweredCount(unansweredCount);
+  }, [unansweredCount, setUnansweredCount]);
+
+  // 소요 시간 계산
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  // 시험 제출 핸들러
+  const handleSubmit = useCallback(async () => {
+    if (questions.length === 0 || isSubmitted) return;
+
+    const submitData = {
+      answers: questions.map((q, index) => ({
+        questionId: q.id,
+        selectedAnswer:
+          answers[index] !== undefined ? Number(answers[index]) : null,
+      })),
+    };
+
+    try {
+      const response = await submitMutation.mutateAsync(submitData);
+      setResults(response.results);
+      setIsSubmitted(true);
+      setContextIsSubmitted(true); // Context 상태도 업데이트
+      // 소요 시간 계산
+      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+    } catch (error) {
+      console.error("시험 제출 실패:", error);
+    }
+  }, [
+    questions,
+    answers,
+    isSubmitted,
+    submitMutation,
+    startTime,
+    setContextIsSubmitted,
+  ]);
+
+  // handleSubmit을 ref로 관리하여 의존성 문제 해결
+  const handleSubmitRef = useRef(handleSubmit);
+  useEffect(() => {
+    handleSubmitRef.current = handleSubmit;
+  }, [handleSubmit]);
+
+  // 시험 종료 핸들러 등록 (한 번만 실행)
+  useEffect(() => {
+    const handleExamEnd = () => {
+      handleSubmitRef.current();
+    };
+
+    setOnExamEnd(handleExamEnd);
+
+    return () => {
+      setOnExamEnd(null);
+    };
+  }, [setOnExamEnd]);
+
+  // 페이지 떠날 때 Context 상태 초기화
+  useEffect(() => {
+    return () => {
+      setContextIsSubmitted(false);
+    };
+  }, [setContextIsSubmitted]);
+
+  const currentQuestion = questions[currentIndex];
+  const selectedAnswer = answers[currentIndex] ?? null;
+
+  // choices를 QuestionCard에 맞는 형식으로 변환
+  const formattedAnswers = useMemo(() => {
+    if (!currentQuestion?.choices) return [];
+    return currentQuestion.choices.map((choice) => ({
+      value: choice.number,
+      label: choice.text,
+    }));
+  }, [currentQuestion]);
+
+  // 문제 상태 계산
+  const questionStates = useMemo(() => {
+    const states: Record<number, TQuestionState> = {};
+
+    questions.forEach((q, index) => {
+      if (isSubmitted && results.length > 0) {
+        const result = results.find((r) => r.questionId === q.id);
+        if (result) {
+          if (result.isCorrect) {
+            states[index + 1] = "correct";
+          } else if (result.selectedAnswer !== null) {
+            states[index + 1] = "incorrect";
+          } else {
+            states[index + 1] = "skipped";
+          }
         }
+      } else if (answers[index] !== null && answers[index] !== undefined) {
+        states[index + 1] = "answered";
+      }
+    });
 
-        setOnExamEnd(handleExamEnd)
+    return states;
+  }, [questions, answers, isSubmitted, results]);
 
-        return () => {
-            setOnExamEnd(null)
-        }
-    }, [setOnExamEnd, answers])
+  const handleAnswerSelect = useCallback(
+    (value: string | number) => {
+      if (!isSubmitted) {
+        setAnswers((prev) => ({
+          ...prev,
+          [currentIndex]: value,
+        }));
+      }
+    },
+    [currentIndex, isSubmitted]
+  );
 
-    const currentQuestion = sampleQuestions[currentIndex]
-    const selectedAnswer = answers[currentIndex] ?? null
+  const handleQuestionSelect = useCallback((questionNumber: number) => {
+    setCurrentIndex(questionNumber - 1);
+  }, []);
 
-    // 문제 상태 계산
-    const questionStates: Record<number, TQuestionState> = {}
-    sampleQuestions.forEach((_, index) => {
-        if (isSubmitted) {
-            const answer = answers[index]
-            const correct = sampleQuestions[index].correctAnswer
-            if (answer === correct) {
-                questionStates[index + 1] = "correct"
-            } else if (answer !== null && answer !== undefined) {
-                questionStates[index + 1] = "incorrect"
-            } else {
-                questionStates[index + 1] = "skipped"
-            }
-        } else if (answers[index] !== null && answers[index] !== undefined) {
-            questionStates[index + 1] = "answered"
-        }
-    })
+  // 이전/다음 버튼 핸들러
+  const handlePrev = useCallback(() => {
+    if (currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+    }
+  }, [currentIndex]);
 
-    const handleAnswerSelect = useCallback((value: string | number) => {
-        if (!isSubmitted) {
-            setAnswers((prev) => ({
-                ...prev,
-                [currentIndex]: value,
-            }))
-        }
-    }, [currentIndex, isSubmitted])
+  const handleNext = useCallback(() => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    }
+  }, [currentIndex, questions.length]);
 
-    const handleQuestionSelect = useCallback((questionNumber: number) => {
-        setCurrentIndex(questionNumber - 1)
-    }, [])
+  // 시간 포맷팅 (분:초)
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}분 ${secs}초`;
+  };
 
+  // 통계 계산
+  const correctCount = results.filter((r) => r.isCorrect).length;
+  const wrongCount = results.length - correctCount;
+  const correctRate =
+    results.length > 0 ? Math.round((correctCount / results.length) * 100) : 0;
 
+  // 제출 후 정답 정보 (결과에서 가져옴)
+  const currentResult = results.find(
+    (r) => r.questionId === currentQuestion?.id
+  );
+
+  if (isLoading) {
     return (
-        <div className="min-h-screen bg-white flex flex-col">
-            {/* Main Content */}
-            <main className="flex-1 flex flex-col items-center px-4 py-8">
-                {/* Question Info */}
-                <div className="w-full max-w-[1104px] mb-4">
-                    <p className="text-sm text-[#6B7280]">
-                        {subjectNameMap[subjectId ?? ""] ?? "알 수 없는 과목"} | {year}년 | 시험모드
-                    </p>
-                </div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-[#6B7280]">문제를 불러오는 중...</p>
+      </div>
+    );
+  }
 
-                {/* Question Navigator */}
-                <div className="w-full max-w-[1104px] mb-6">
-                    <QuestionNavigator
-                        size="full"
-                        totalQuestions={sampleQuestions.length}
-                        currentQuestion={currentIndex + 1}
-                        questionStates={questionStates}
-                        showCheckmarks={true}
-                        showLegend={true}
-                        onQuestionSelect={handleQuestionSelect}
-                    />
-                </div>
+  if (isError || questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-red-500">문제를 불러오는데 실패했습니다.</p>
+      </div>
+    );
+  }
+  // 시험 결과 화면
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
+        <main className="flex-1 flex flex-col items-center px-4 py-8">
+          {/* 페이지 제목 */}
+          <div className="w-full max-w-[1104px] mb-6">
+            <h1 className="text-2xl font-bold text-[#101828] mb-2">
+              시험 결과
+            </h1>
+            <div className="flex items-center gap-4 text-sm text-[#6B7280]">
+              <div className="flex items-center gap-1">
+                <BookOpen className="w-4 h-4" />
+                <span>{exam?.subject ?? "-"}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                <span>{exam?.title ?? "-"}</span>
+              </div>
+            </div>
+          </div>
 
-                {/* Question Card */}
-                <div className="w-full max-w-[1066px]">
-                    <QuestionCard
-                        size="full"
-                        question={currentQuestion.questionText}
-                        answers={currentQuestion.answers}
-                        selectedAnswer={selectedAnswer}
-                        correctAnswer={currentQuestion.correctAnswer}
-                        showResult={isSubmitted}
-                        onAnswerSelect={handleAnswerSelect}
-                        actionButtonText=""
-                    />
+          {/* 점수 카드 */}
+          <div className="w-full max-w-[1104px] bg-white border border-[#E5E7EB] rounded-xl p-6 mb-4">
+            <div className="flex items-center justify-between">
+              {/* 왼쪽: 획득 점수 */}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-12 h-12 bg-[#EFF6FF] rounded-full">
+                  <CheckCircle className="w-6 h-6 text-[#155DFC]" />
                 </div>
+                <div>
+                  <p className="text-sm text-[#6B7280]">획득 점수</p>
+                  <p className="text-3xl font-bold text-[#101828]">
+                    {correctCount}
+                    <span className="text-lg font-normal text-[#9CA3AF]">
+                      /{questions.length}
+                    </span>
+                  </p>
+                </div>
+              </div>
 
-                {/* 해설 영역 - 제출 이후에만 노출 */}
-                {isSubmitted && currentQuestion.explanation && (
-                    <div className="w-full max-w-[1066px] mt-6">
-                        <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-[16px] p-6">
-                            <div className="flex items-center gap-2 mb-3">
-                                <h3 className="font-semibold text-[#101828]">해설</h3>
-                            </div>
-                            <p className="text-[#364153] leading-7">
-                                {currentQuestion.explanation}
-                            </p>
-                        </div>
-                    </div>
-                )}
-            </main>
+              {/* 오른쪽: 정답률 */}
+              <div className="text-right">
+                <p className="text-sm text-[#6B7280]">정답률</p>
+                <p className="text-3xl font-bold text-[#155DFC]">
+                  {correctRate}%
+                </p>
+              </div>
+            </div>
+
+            {/* 프로그레스 바 */}
+            <div className="mt-4 h-3 bg-[#E5E7EB] rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${correctRate}%`,
+                  background: "linear-gradient(to right, #22C55E, #86EFAC)",
+                }}
+              />
+            </div>
+          </div>
+
+          {/* 통계 카드들 */}
+          <div className="w-full max-w-[1104px] grid grid-cols-3 gap-4 mb-6">
+            {/* 총 소요 시간 */}
+            <div className="bg-white border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-[#F3F4F6] rounded-full">
+                <Clock className="w-5 h-5 text-[#6B7280]" />
+              </div>
+              <div>
+                <p className="text-xs text-[#6B7280]">총 소요 시간</p>
+                <p className="text-lg font-semibold text-[#101828]">
+                  {formatTime(elapsedTime)}
+                </p>
+              </div>
+            </div>
+
+            {/* 정답 */}
+            <div className="bg-white border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-[#DCFCE7] rounded-full">
+                <CheckCircle className="w-5 h-5 text-[#22C55E]" />
+              </div>
+              <div>
+                <p className="text-xs text-[#6B7280]">정답</p>
+                <p className="text-lg font-semibold text-[#101828]">
+                  {correctCount}개
+                </p>
+              </div>
+            </div>
+
+            {/* 오답 */}
+            <div className="bg-white border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-[#FEE2E2] rounded-full">
+                <XCircle className="w-5 h-5 text-[#EF4444]" />
+              </div>
+              <div>
+                <p className="text-xs text-[#6B7280]">오답</p>
+                <p className="text-lg font-semibold text-[#101828]">
+                  {wrongCount}개
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Question Navigator */}
+          <div className="w-full max-w-[1104px] mb-6">
+            <QuestionNavigator
+              size="full"
+              totalQuestions={questions.length}
+              currentQuestion={currentIndex + 1}
+              questionStates={questionStates}
+              showCheckmarks={true}
+              showLegend={true}
+              onQuestionSelect={handleQuestionSelect}
+            />
+          </div>
+
+          {/* 문제 카드 */}
+          <div className="w-full max-w-[1104px] bg-white border border-[#E5E7EB] rounded-xl p-6 mb-6">
+            {currentQuestion && (
+              <QuestionCard
+                size="full"
+                question={currentQuestion.text}
+                answers={formattedAnswers}
+                selectedAnswer={
+                  answers[currentIndex] !== undefined
+                    ? answers[currentIndex]
+                    : null
+                }
+                correctAnswer={currentResult?.correctAnswer ?? undefined}
+                showResult={true}
+                actionButtonText=""
+              />
+            )}
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="w-full max-w-[896px]">
+            <ExamNavButtons
+              onPrevClick={handlePrev}
+              onNextClick={handleNext}
+              prevDisabled={currentIndex === 0}
+              nextDisabled={currentIndex === questions.length - 1}
+              showAnswer={false}
+            />
+          </div>
+
+          {/* 홈으로 돌아가기 버튼 */}
+          <div className="w-full max-w-[896px] mt-4">
+            <Button
+              onClick={() => navigate("/")}
+              className="w-full py-3 rounded-xl cursor-pointer"
+            >
+              홈으로 돌아가기
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // 시험 진행 화면
+  return (
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center px-4 py-8">
+        {/* Question Info */}
+        <div className="w-full max-w-[1104px] mb-4">
+          <p className="text-sm text-[#6B7280]">
+            {exam?.title ?? "-"} | 시험모드 | {currentIndex + 1} /{" "}
+            {questions.length}
+          </p>
         </div>
-    )
-}
+
+        {/* Question Navigator */}
+        <div className="w-full max-w-[1104px] mb-6">
+          <QuestionNavigator
+            size="full"
+            totalQuestions={questions.length}
+            currentQuestion={currentIndex + 1}
+            questionStates={questionStates}
+            showCheckmarks={true}
+            showLegend={true}
+            onQuestionSelect={handleQuestionSelect}
+          />
+        </div>
+
+        {/* Question Card */}
+        {currentQuestion && (
+          <div className="w-full max-w-[1066px]">
+            <QuestionCard
+              size="full"
+              question={currentQuestion.text}
+              answers={formattedAnswers}
+              selectedAnswer={selectedAnswer}
+              correctAnswer={undefined}
+              showResult={false}
+              onAnswerSelect={handleAnswerSelect}
+              actionButtonText=""
+            />
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
