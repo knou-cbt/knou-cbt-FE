@@ -27,11 +27,11 @@ const questionNumberVariants = cva(
 )
 
 export interface IQuestionNumberButtonProps
-  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onClick">,
-    VariantProps<typeof questionNumberVariants> {
-  number: number
-  showCheckmark?: boolean
-  onSelect?: (number: number) => void
+    extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onClick">,
+        VariantProps<typeof questionNumberVariants> {
+    number: number
+    showCheckmark?: boolean
+    onNumberSelect?: (number: number) => void
 }
 
 const QuestionNumberButton = React.forwardRef<
@@ -44,14 +44,14 @@ const QuestionNumberButton = React.forwardRef<
       state = "default",
       number,
       showCheckmark = false,
-      onSelect,
+      onNumberSelect,
       ...props
     },
     ref
   ) => {
     const handleClick = () => {
-      if (onSelect) {
-        onSelect(number)
+      if (onNumberSelect) {
+        onNumberSelect(number)
       }
     }
 
@@ -249,7 +249,7 @@ const QuestionNavigator = React.forwardRef<
                   number={num}
                   state={state}
                   showCheckmark={showCheckmarks && state === "answered"}
-                  onSelect={onQuestionSelect}
+                  onNumberSelect={onQuestionSelect}
                 />
               )
             })}

@@ -1,7 +1,7 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 // ============================================
 // Tag Components
@@ -23,7 +23,7 @@ const tagVariants = cva(
       variant: "secondary",
     },
   }
-)
+);
 
 export interface IQuestionTagProps
   extends React.HTMLAttributes<HTMLSpanElement>,
@@ -37,8 +37,8 @@ const QuestionTag = React.forwardRef<HTMLSpanElement, IQuestionTagProps>(
       {...props}
     />
   )
-)
-QuestionTag.displayName = "QuestionTag"
+);
+QuestionTag.displayName = "QuestionTag";
 
 // ============================================
 // Answer Choice Components
@@ -60,7 +60,7 @@ const answerChoiceVariants = cva(
       state: "default",
     },
   }
-)
+);
 
 const radioVariants = cva(
   "box-border flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all duration-200",
@@ -78,25 +78,25 @@ const radioVariants = cva(
       state: "default",
     },
   }
-)
+);
 
 export interface IAnswerChoiceProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "onClick"> {
-  state?: "default" | "selected" | "correct" | "incorrect" | "disabled"
-  value: string | number
-  onSelect?: (value: string | number) => void
+  state?: "default" | "selected" | "correct" | "incorrect" | "disabled";
+  value: string | number;
+  onValueSelect?: (value: string | number) => void;
 }
 
 const AnswerChoice = React.forwardRef<HTMLDivElement, IAnswerChoiceProps>(
   (
-    { className, state = "default", value, onSelect, children, ...props },
+    { className, state = "default", value, onValueSelect, children, ...props },
     ref
   ) => {
     const handleClick = () => {
-      if (state !== "disabled" && onSelect) {
-        onSelect(value)
+      if (state !== "disabled" && onValueSelect) {
+        onValueSelect(value);
       }
-    }
+    };
 
     return (
       <div
@@ -145,10 +145,10 @@ const AnswerChoice = React.forwardRef<HTMLDivElement, IAnswerChoiceProps>(
           {children}
         </span>
       </div>
-    )
+    );
   }
-)
-AnswerChoice.displayName = "AnswerChoice"
+);
+AnswerChoice.displayName = "AnswerChoice";
 
 // ============================================
 // Action Button Component
@@ -171,7 +171,7 @@ const actionButtonVariants = cva(
       variant: "default",
     },
   }
-)
+);
 
 export interface IQuestionActionButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -184,13 +184,16 @@ const QuestionActionButton = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      actionButtonVariants({ variant: disabled ? "disabled" : variant, className })
+      actionButtonVariants({
+        variant: disabled ? "disabled" : variant,
+        className,
+      })
     )}
     disabled={disabled}
     {...props}
   />
-))
-QuestionActionButton.displayName = "QuestionActionButton"
+));
+QuestionActionButton.displayName = "QuestionActionButton";
 
 // ============================================
 // Question Card Component
@@ -211,31 +214,31 @@ const questionCardVariants = cva(
       size: "default",
     },
   }
-)
+);
 
 export interface IQuestionTag {
-  label: string
-  variant?: "primary" | "secondary" | "success" | "warning" | "danger"
+  label: string;
+  variant?: "primary" | "secondary" | "success" | "warning" | "danger";
 }
 
 export interface IAnswerOption {
-  value: string | number
-  label: string
+  value: string | number;
+  label: string;
 }
 
 export interface IQuestionCardProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof questionCardVariants> {
-  tags?: IQuestionTag[]
-  question?: string
-  answers?: IAnswerOption[]
-  selectedAnswer?: string | number | null
-  correctAnswer?: string | number | null
-  showResult?: boolean
-  onAnswerSelect?: (value: string | number) => void
-  actionButtonText?: string
-  actionButtonDisabled?: boolean
-  onActionClick?: () => void
+  tags?: IQuestionTag[];
+  question?: string;
+  answers?: IAnswerOption[];
+  selectedAnswer?: string | number | null;
+  correctAnswer?: string | number | null;
+  showResult?: boolean;
+  onAnswerSelect?: (value: string | number) => void;
+  actionButtonText?: string;
+  actionButtonDisabled?: boolean;
+  onActionClick?: () => void;
 }
 
 const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
@@ -262,12 +265,13 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
       value: string | number
     ): "default" | "selected" | "correct" | "incorrect" => {
       if (showResult) {
-        if (value === correctAnswer) return "correct"
-        if (value === selectedAnswer && value !== correctAnswer) return "incorrect"
+        if (value === correctAnswer) return "correct";
+        if (value === selectedAnswer && value !== correctAnswer)
+          return "incorrect";
       }
-      if (value === selectedAnswer) return "selected"
-      return "default"
-    }
+      if (value === selectedAnswer) return "selected";
+      return "default";
+    };
 
     return (
       <div className="flex flex-col items-start gap-6 w-full">
@@ -307,7 +311,7 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
                 key={answer.value}
                 value={answer.value}
                 state={getAnswerState(answer.value)}
-                onSelect={onAnswerSelect}
+                onValueSelect={onAnswerSelect}
               >
                 {answer.label}
               </AnswerChoice>
@@ -325,10 +329,10 @@ const QuestionCard = React.forwardRef<HTMLDivElement, IQuestionCardProps>(
           </QuestionActionButton>
         )}
       </div>
-    )
+    );
   }
-)
-QuestionCard.displayName = "QuestionCard"
+);
+QuestionCard.displayName = "QuestionCard";
 
 // ============================================
 // Question Container Component
@@ -351,8 +355,8 @@ const QuestionContainer = React.forwardRef<
   >
     {children}
   </div>
-))
-QuestionContainer.displayName = "QuestionContainer"
+));
+QuestionContainer.displayName = "QuestionContainer";
 
 export {
   QuestionTag,
@@ -365,5 +369,4 @@ export {
   radioVariants,
   actionButtonVariants,
   questionCardVariants,
-}
-
+};
