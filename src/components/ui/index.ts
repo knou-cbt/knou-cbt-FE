@@ -6,4 +6,6 @@ export * from "./question-card"
 export * from "./question-navigator"
 export * from "./table"
 export * from "./exam-nav-buttons"
+export * from "./modal"
+export * from "./alert"
 

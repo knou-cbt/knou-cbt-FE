@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
 import { useExamContext } from "@/contexts";
-import { Button } from "@/components/ui";
+import { Button, ConfirmModal, AlertModal } from "@/components/ui";
 
 export interface IHeaderProps extends React.HTMLAttributes<HTMLElement> {
   variant?: "default" | "exam";
@@ -19,6 +19,8 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
     const { onExamEnd, unansweredCount } = useExamContext();
     const [remainingTime, setRemainingTime] = useState(examDuration);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showTimeoutAlert, setShowTimeoutAlert] = useState(false);
+    const [showSubmitAlert, setShowSubmitAlert] = useState(false);
 
     // onExamEnd의 최신 값을 ref로 관리 (타이머 리셋 방지)
     const onExamEndRef = useRef(onExamEnd);
@@ -34,9 +36,8 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
         setRemainingTime((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            // 시간 종료 시 자동 제출
-            alert("시험 시간이 종료되었습니다. 자동으로 제출됩니다.");
-            onExamEndRef.current?.();
+            // 시간 종료 시 알럿 표시
+            setShowTimeoutAlert(true);
             return 0;
           }
           return prev - 1;
@@ -44,7 +45,13 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
       }, 1000);
 
       return () => clearInterval(timer);
-    }, [variant, navigate]);
+    }, [variant]);
+
+    // 시간 종료 알럿 확인 시 자동 제출
+    const handleTimeoutAlertClose = () => {
+      setShowTimeoutAlert(false);
+      onExamEndRef.current?.();
+    };
 
     // 시간 포맷팅 (MM:SS)
     const formatTime = useCallback((seconds: number) => {
@@ -67,6 +74,12 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
     // 제출 확인
     const handleConfirmSubmit = () => {
       setShowConfirmModal(false);
+      setShowSubmitAlert(true);
+    };
+
+    // 제출 완료 알럿 확인 시
+    const handleSubmitAlertClose = () => {
+      setShowSubmitAlert(false);
       onExamEnd?.();
     };
 
@@ -80,7 +93,7 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
         <header
           ref={ref}
           className={cn(
-            "box-border flex flex-col items-start px-6 py-4 pb-[1px] w-full h-[77px] bg-white border-b border-[#E5E7EB]",
+            "box-border flex flex-col items-start px-6 py-4 pb-px w-full h-[77px] bg-white border-b border-[#E5E7EB]",
             className
           )}
           {...props}
@@ -119,7 +132,7 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
                 <Button
                   variant="outline"
                   onClick={handleExamEndClick}
-                  className="bg-[#FEF2F2] border-[#FFC9C9] text-xs text-[#E7000B] hover:bg-[#FEE2E2] hover:text-[#E7000B] cursor-pointer"
+                  className="bg-[#FEF2F2] border-[#FFC9C9] text-xs text-[#E7000B] hover:bg-[#FEE2E2] hover:text-[#E7000B]"
                 >
                   <LogOut className="w-4 h-4" strokeWidth={1.33} />
                   시험 종료
@@ -136,47 +149,47 @@ const Header = React.forwardRef<HTMLElement, IHeaderProps>(
           </div>
         </header>
 
-        {/* 컨펌 모달 */}
-        {showConfirmModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            {/* 배경 오버레이 */}
-            <div
-              className="absolute inset-0 bg-black/50"
-              onClick={handleCancelSubmit}
-            />
+        {/* 시간 종료 알럿 */}
+        <AlertModal
+          open={showTimeoutAlert}
+          onClose={handleTimeoutAlertClose}
+          type="warning"
+          title="시험 시간 종료"
+          message="시험 시간이 종료되었습니다. 자동으로 제출됩니다."
+          confirmText="확인"
+        />
 
-            {/* 모달 콘텐츠 */}
-            <div className="relative bg-white rounded-xl p-6 w-full max-w-[400px] mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-[#101828] mb-3">
-                시험 제출 확인
-              </h3>
-              <p className="text-[#4B5563] mb-6">
-                아직{" "}
-                <span className="font-semibold text-[#E7000B]">
-                  {unansweredCount}개
-                </span>
-                의 문제를 풀지 않았습니다.
-                <br />
-                그대로 제출할까요?
-              </p>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleCancelSubmit}
-                  className="flex-1 cursor-pointer"
-                >
-                  취소
-                </Button>
-                <Button
-                  onClick={handleConfirmSubmit}
-                  className="flex-1 bg-[#E7000B] hover:bg-[#C00] text-white cursor-pointer"
-                >
-                  제출하기
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* 제출 완료 알럿 */}
+        <AlertModal
+          open={showSubmitAlert}
+          onClose={handleSubmitAlertClose}
+          type="success"
+          title="시험 제출 완료"
+          message="시험이 성공적으로 제출되었습니다."
+          confirmText="확인"
+        />
+
+        {/* 컨펌 모달 */}
+        <ConfirmModal
+          open={showConfirmModal}
+          onClose={handleCancelSubmit}
+          onConfirm={handleConfirmSubmit}
+          title="시험 제출 확인"
+          message={
+            <>
+              아직{" "}
+              <span className="font-semibold text-[#E7000B]">
+                {unansweredCount}개
+              </span>
+              의 문제를 풀지 않았습니다.
+              <br />
+              그대로 제출할까요?
+            </>
+          }
+          confirmText="제출하기"
+          cancelText="취소"
+          confirmVariant="destructive"
+        />
       </>
     );
   }
