@@ -11,12 +11,4 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  server: {
-    // 개발 서버에서 SPA fallback 설정
-    historyApiFallback: true,
-  },
-  preview: {
-    // 프리뷰 서버에서 SPA fallback 설정
-    historyApiFallback: true,
-  },
 });
