@@ -2,12 +2,18 @@ import { createBrowserRouter } from "react-router-dom";
 
 import App from "@/App";
 import { MainContainer } from "@/components";
-import { ExamYearPage, MemorizeModePage, TestModePage } from "@/routes";
+import {
+  ExamYearPage,
+  MemorizeModePage,
+  TestModePage,
+  NotFoundPage,
+} from "@/routes";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <NotFoundPage />,
     children: [
       {
         index: true,
@@ -24,6 +30,10 @@ export const router = createBrowserRouter([
       {
         path: "exam/:subjectId/:year/test-mode",
         element: <TestModePage />,
+      },
+      {
+        path: "*",
+        element: <NotFoundPage />,
       },
     ],
   },
