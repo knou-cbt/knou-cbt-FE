@@ -92,21 +92,21 @@ export const ExamYearPage = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="flex flex-col items-center px-4 md:px-[446px] pt-24 pb-12 w-full bg-gradient-to-br from-[#EFF6FF] to-white">
-        <div className="flex flex-col items-center gap-4 w-full max-w-[768px]">
-          <h1 className="text-base font-semibold leading-6 text-center text-[#101828]">
+      <section className="flex flex-col items-center px-4 md:px-8 lg:px-16 pt-16 md:pt-24 pb-8 md:pb-12 w-full bg-gradient-to-br from-[#EFF6FF] to-white">
+        <div className="flex flex-col items-center gap-3 md:gap-4 w-full max-w-[768px]">
+          <h1 className="text-lg md:text-xl lg:text-2xl font-semibold leading-7 text-center text-[#101828]">
             {subjectData?.name ?? "과목"}
           </h1>
-          <p className="text-base leading-6 text-center text-[#4A5565]">
+          <p className="text-sm md:text-base leading-6 text-center text-[#4A5565]">
             풀고 싶은 시험을 선택하세요.
           </p>
         </div>
       </section>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center px-4 py-12 bg-white">
-        <div className="flex flex-col items-center gap-2 mb-8">
-          <h2 className="text-2xl font-semibold text-[#101828]">
+      <main className="flex-1 flex flex-col items-center px-4 py-8 md:py-12 bg-white">
+        <div className="flex flex-col items-center gap-2 mb-6 md:mb-8">
+          <h2 className="text-xl md:text-2xl font-semibold text-[#101828]">
             연도별 시험 문제
           </h2>
         </div>

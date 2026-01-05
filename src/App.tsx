@@ -8,11 +8,10 @@ function AppContent() {
   const { isSubmitted } = useExamContext();
 
   // 시험모드 경로 체크 (제출 후에는 exam 모드 해제)
-  const isExamMode =
-    location.pathname.includes("/test-mode") && !isSubmitted;
+  const isExamMode = location.pathname.includes("/test-mode") && !isSubmitted;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col overflow-y-auto">
       <Header
         key={isExamMode ? "exam" : "default"}
         variant={isExamMode ? "exam" : "default"}

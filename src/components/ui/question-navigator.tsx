@@ -1,7 +1,7 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 // ============================================
 // Question Number Button Component
@@ -12,7 +12,8 @@ const questionNumberVariants = cva(
   {
     variants: {
       state: {
-        default: "bg-white border-[#E5E7EB] text-[#99A1AF] hover:border-[#D1D5DC]",
+        default:
+          "bg-white border-[#E5E7EB] text-[#99A1AF] hover:border-[#D1D5DC]",
         current: "bg-[#155DFC] border-[#155DFC] text-white",
         answered: "bg-white border-[#D1D5DC] text-[#364153]",
         skipped: "bg-white border-[#E5E7EB] text-[#99A1AF]",
@@ -24,14 +25,14 @@ const questionNumberVariants = cva(
       state: "default",
     },
   }
-)
+);
 
 export interface IQuestionNumberButtonProps
-    extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onClick">,
-        VariantProps<typeof questionNumberVariants> {
-    number: number
-    showCheckmark?: boolean
-    onNumberSelect?: (number: number) => void
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onClick">,
+    VariantProps<typeof questionNumberVariants> {
+  number: number;
+  showCheckmark?: boolean;
+  onNumberSelect?: (number: number) => void;
 }
 
 const QuestionNumberButton = React.forwardRef<
@@ -51,9 +52,9 @@ const QuestionNumberButton = React.forwardRef<
   ) => {
     const handleClick = () => {
       if (onNumberSelect) {
-        onNumberSelect(number)
+        onNumberSelect(number);
       }
-    }
+    };
 
     return (
       <button
@@ -82,10 +83,10 @@ const QuestionNumberButton = React.forwardRef<
           number
         )}
       </button>
-    )
+    );
   }
-)
-QuestionNumberButton.displayName = "QuestionNumberButton"
+);
+QuestionNumberButton.displayName = "QuestionNumberButton";
 
 // ============================================
 // Legend Item Component
@@ -102,11 +103,11 @@ const legendIconVariants = cva("w-4 h-4 rounded", {
   defaultVariants: {
     type: "current",
   },
-})
+});
 
 export interface ILegendItemProps extends React.HTMLAttributes<HTMLDivElement> {
-  type: "current" | "answered" | "skipped"
-  label: string
+  type: "current" | "answered" | "skipped";
+  label: string;
 }
 
 const LegendItem = React.forwardRef<HTMLDivElement, ILegendItemProps>(
@@ -140,8 +141,8 @@ const LegendItem = React.forwardRef<HTMLDivElement, ILegendItemProps>(
       </span>
     </div>
   )
-)
-LegendItem.displayName = "LegendItem"
+);
+LegendItem.displayName = "LegendItem";
 
 // ============================================
 // Question Navigator Component
@@ -162,7 +163,7 @@ const questionNavigatorVariants = cva(
       size: "default",
     },
   }
-)
+);
 
 export type TQuestionState =
   | "default"
@@ -170,23 +171,23 @@ export type TQuestionState =
   | "answered"
   | "skipped"
   | "correct"
-  | "incorrect"
+  | "incorrect";
 
 export interface IQuestionNavigatorProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof questionNavigatorVariants> {
-  title?: string
-  totalQuestions?: number
-  currentQuestion?: number
-  questionStates?: Record<number, TQuestionState>
-  showCheckmarks?: boolean
-  showLegend?: boolean
-  onQuestionSelect?: (questionNumber: number) => void
+  title?: string;
+  totalQuestions?: number;
+  currentQuestion?: number;
+  questionStates?: Record<number, TQuestionState>;
+  showCheckmarks?: boolean;
+  showLegend?: boolean;
+  onQuestionSelect?: (questionNumber: number) => void;
   legendLabels?: {
-    current?: string
-    answered?: string
-    skipped?: string
-  }
+    current?: string;
+    answered?: string;
+    skipped?: string;
+  };
 }
 
 const QuestionNavigator = React.forwardRef<
@@ -215,15 +216,12 @@ const QuestionNavigator = React.forwardRef<
     ref
   ) => {
     const getQuestionState = (questionNumber: number): TQuestionState => {
-      if (questionNumber === currentQuestion) return "current"
-      if (questionStates[questionNumber]) return questionStates[questionNumber]
-      return "default"
-    }
+      if (questionNumber === currentQuestion) return "current";
+      if (questionStates[questionNumber]) return questionStates[questionNumber];
+      return "default";
+    };
 
-    const questions = Array.from(
-      { length: totalQuestions },
-      (_, i) => i + 1
-    )
+    const questions = Array.from({ length: totalQuestions }, (_, i) => i + 1);
 
     return (
       <div
@@ -242,7 +240,7 @@ const QuestionNavigator = React.forwardRef<
         <div className="w-full overflow-x-auto">
           <div className="flex flex-row flex-wrap items-start gap-1.5">
             {questions.map((num) => {
-              const state = getQuestionState(num)
+              const state = getQuestionState(num);
               return (
                 <QuestionNumberButton
                   key={num}
@@ -251,7 +249,7 @@ const QuestionNavigator = React.forwardRef<
                   showCheckmark={showCheckmarks && state === "answered"}
                   onNumberSelect={onQuestionSelect}
                 />
-              )
+              );
             })}
           </div>
         </div>
@@ -259,19 +257,28 @@ const QuestionNavigator = React.forwardRef<
         {/* Legend */}
         {showLegend && (
           <div className="flex flex-row items-start gap-4 w-full py-2 border-t border-[#E5E7EB]">
-            <LegendItem type="current" label={legendLabels.current || "현재 문제"} />
-            <LegendItem type="answered" label={legendLabels.answered || "푼 문제"} />
-            <LegendItem type="skipped" label={legendLabels.skipped || "건너뛴 문제"} />
+            <LegendItem
+              type="current"
+              label={legendLabels.current || "현재 문제"}
+            />
+            <LegendItem
+              type="answered"
+              label={legendLabels.answered || "푼 문제"}
+            />
+            <LegendItem
+              type="skipped"
+              label={legendLabels.skipped || "건너뛴 문제"}
+            />
           </div>
         )}
 
         {/* Custom Content */}
         {children}
       </div>
-    )
+    );
   }
-)
-QuestionNavigator.displayName = "QuestionNavigator"
+);
+QuestionNavigator.displayName = "QuestionNavigator";
 
 export {
   QuestionNumberButton,
@@ -280,5 +287,4 @@ export {
   questionNumberVariants,
   legendIconVariants,
   questionNavigatorVariants,
-}
-
+};

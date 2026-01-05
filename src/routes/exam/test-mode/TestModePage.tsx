@@ -10,6 +10,7 @@ import {
   Button,
 } from "@/components/ui";
 import { useExamContext } from "@/contexts";
+import { useIsMobile } from "@/lib/useIsMobile";
 
 import { useExamQuestionsQuery, useExamSubmitMutation } from "./hooks/service";
 import type { IQuestionResult } from "./interface";
@@ -20,6 +21,7 @@ export const TestModePage = () => {
     year: string;
   }>();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const {
     setOnExamEnd,
     setUnansweredCount,
@@ -394,18 +396,20 @@ export const TestModePage = () => {
           </p>
         </div>
 
-        {/* Question Navigator */}
-        <div className="w-full max-w-[1104px] mb-6">
-          <QuestionNavigator
-            size="full"
-            totalQuestions={questions.length}
-            currentQuestion={currentIndex + 1}
-            questionStates={questionStates}
-            showCheckmarks={true}
-            showLegend={true}
-            onQuestionSelect={handleQuestionSelect}
-          />
-        </div>
+        {/* Question Navigator - 모바일에서는 숨김 */}
+        {!isMobile && (
+          <div className="w-full max-w-[1104px] mb-6">
+            <QuestionNavigator
+              size="full"
+              totalQuestions={questions.length}
+              currentQuestion={currentIndex + 1}
+              questionStates={questionStates}
+              showCheckmarks={true}
+              showLegend={true}
+              onQuestionSelect={handleQuestionSelect}
+            />
+          </div>
+        )}
 
         {/* Question Card */}
         {currentQuestion && (
@@ -422,6 +426,17 @@ export const TestModePage = () => {
             />
           </div>
         )}
+
+        {/* Navigation Buttons */}
+        <div className="w-full max-w-[896px] mt-6">
+          <ExamNavButtons
+            onPrevClick={handlePrev}
+            onNextClick={handleNext}
+            prevDisabled={currentIndex === 0}
+            nextDisabled={currentIndex === questions.length - 1}
+            showAnswer={false}
+          />
+        </div>
       </main>
     </div>
   );
